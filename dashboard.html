@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CI/CD Dashboard</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; background: #f5f5f5; }
+        .dashboard { max-width: 800px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .status-success { border-left: 5px solid #28a745; padding-left: 15px; }
+        .status-failure { border-left: 5px solid #dc3545; padding-left: 15px; }
+        .status-progress { border-left: 5px solid #ffc107; padding-left: 15px; }
+        .refresh-btn { background: #007bff; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; }
+        .auto-refresh { margin-left: 10px; }
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <h1>🚀 CI/CD Dashboard</h1>
+        <div class="controls">
+            <button class="refresh-btn" onclick="loadBuildStatus()">Refresh Status</button>
+            <label class="auto-refresh">
+                <input type="checkbox" id="autoRefresh" onchange="toggleAutoRefresh()"> Auto-refresh every 10s
+            </label>
+        </div>
+        <div id="build-status"></div>
+    </div>
+
+    <script>
+        let refreshInterval;
+        
+        function loadBuildStatus() {
+            fetch('BUILD_STATUS.md')
+                .then(response => response.text())
+                .then(text => {
+                    document.getElementById('build-status').innerHTML = marked.parse(text);
+                    updateStatusStyling();
+                })
+                .catch(error => {
+                    document.getElementById('build-status').innerHTML = '<p>Error loading build status</p>';
+                });
+        }
+
+        function updateStatusStyling() {
+            const statusElement = document.querySelector('#build-status h3');
+            if (statusElement) {
+                const status = statusElement.textContent.trim();
+                const container = document.getElementById('build-status');
+                container.className = '';
+                if (status === 'SUCCESS') {
+                    container.classList.add('status-success');
+                } else if (status === 'FAILED') {
+                    container.classList.add('status-failure');
+                } else if (status === 'IN_PROGRESS') {
+                    container.classList.add('status-progress');
+                }
+            }
+        }
+
+        function toggleAutoRefresh() {
+            const autoRefresh = document.getElementById('autoRefresh');
+            if (autoRefresh.checked) {
+                refreshInterval = setInterval(loadBuildStatus, 10000);
+            } else {
+                clearInterval(refreshInterval);
+            }
+        }
+
+        // Load initial status
+        loadBuildStatus();
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</body>
+</html>

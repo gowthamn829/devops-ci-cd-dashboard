@@ -1,0 +1,60 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          
+      - name: Install dependencies
+        run: |
+          cd frontend && npm ci
+          cd ../backend && npm ci
+          
+      - name: Run tests
+        run: |
+          cd frontend && npm test -- --watchAll=false
+          cd ../backend && npm test
+          
+      - name: Build applications
+        run: |
+          cd frontend && npm run build
+          cd ../backend && npm run build
+          
+      - name: Generate Build Status
+        run: |
+          echo "# Build Status" > BUILD_STATUS.md
+          echo "" >> BUILD_STATUS.md
+          echo "## #${{ github.run_number }}" >> BUILD_STATUS.md
+          echo "Commit: ${{ github.sha }}" >> BUILD_STATUS.md
+          echo "Duration: Building..." >> BUILD_STATUS.md
+          echo "Triggered by: ${{ github.actor }}" >> BUILD_STATUS.md
+          echo "Time: $(date -u +'%Y-%m-%d %H:%M:%S UTC')" >> BUILD_STATUS.md
+          echo "" >> BUILD_STATUS.md
+          echo "---" >> BUILD_STATUS.md
+          echo "" >> BUILD_STATUS.md
+          echo "### IN_PROGRESS" >> BUILD_STATUS.md
+          echo "- Frontend: Building..." >> BUILD_STATUS.md
+          echo "- Backend: Building..." >> BUILD_STATUS.md
+          echo "- Tests: Running..." >> BUILD_STATUS.md
+          echo "- Deployment: Pending..." >> BUILD_STATUS.md
+
+      - name: Commit build status
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add BUILD_STATUS.md
+          git commit -m "Update build status: IN_PROGRESS" || exit 0
+          git push
