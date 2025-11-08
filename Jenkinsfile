@@ -44,8 +44,18 @@ pipeline {
         stage('Deploy') {
             steps {
                 echo 'Deploying application...'
-                // Add deployment commands here
-                sh 'echo "Deployment would happen here"'
+                sh '''
+                curl -X POST http://localhost:6060/api/builds \
+                  -H "Content-Type: application/json" \
+                  -d "{
+                    \\"buildNumber\\": \\"${BUILD_NUMBER}\\",
+                    \\"status\\": \\"SUCCESS\\",
+                    \\"commit\\": \\"${GIT_COMMIT}\\",
+                    \\"duration\\": \\"${BUILD_DURATION}\\",
+                    \\"triggeredBy\\": \\"${BUILD_USER}\\",
+                    \\"timestamp\\": \\"$(date -Iseconds)\\"
+                  }"
+                '''
             }
         }
     }
