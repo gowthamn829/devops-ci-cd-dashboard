@@ -13,7 +13,8 @@ pipeline {
             steps {
                 dir('backend') {
                     echo 'Installing backend dependencies...'
-                    sh 'curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && sudo apt-get update && sudo apt-get install -y nodejs'
+                    sh 'curl -fsSL https://deb.nodesource.com/setup_20.x | bash -'
+                    sh 'apt-get update && apt-get install -y nodejs'
                     sh 'npm install'
                     echo 'Building backend...'
                     sh 'npm run build || echo "No build script, starting server instead"'
@@ -25,7 +26,8 @@ pipeline {
             steps {
                 dir('backend/frontend') {
                     echo 'Installing frontend dependencies...'
-                    sh 'curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && sudo apt-get update && sudo apt-get install -y nodejs'
+                    sh 'curl -fsSL https://deb.nodesource.com/setup_20.x | bash -'
+                    sh 'apt-get update && apt-get install -y nodejs'
                     sh 'npm install'
                     echo 'Building frontend...'
                     sh 'npm run build'
